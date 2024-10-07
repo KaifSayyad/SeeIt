@@ -1,0 +1,52 @@
+/* Container for the entire page */
+.images-page-container {
+    padding: 20px;
+    text-align: center;
+    background-color: #f5f7fa;
+  }
+  
+  /* Title styling */
+  .images-page-container h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  /* Error message styling */
+  .images-page-container p {
+    color: red;
+    font-size: 1.2rem;
+  }
+  
+  /* Container for the image grid */
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 images per row */
+    gap: 15px;
+    justify-items: center;
+  }
+  
+  /* Styling for individual image cards */
+  .image-card {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Image itself adjusts to fit container without distortion */
+  .image-card img {
+    max-width: 100%;
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 4px;
+  }
+  
+  /* Add a hover effect to enlarge the image slightly */
+  .image-card:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  

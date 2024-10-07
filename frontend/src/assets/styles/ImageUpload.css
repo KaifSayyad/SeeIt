@@ -1,0 +1,64 @@
+/* Main container for the image upload form */
+.image-upload-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f7fa;
+}
+
+/* Styling for the form title */
+h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* File input styling */
+input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #3498db;
+    background-color: #f9fbfd;
+    cursor: pointer;
+    margin-bottom: 20px;
+    width: 300px;
+}
+
+/* Image preview styling */
+img {
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* Button styling */
+button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+/* Button hover effect */
+button:hover {
+    background-color: #2980b9;
+}
+
+/* Audio player styling */
+audio {
+    margin-top: 20px;
+    width: 300px;
+}
+
+/* Error message styling */
+p {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
