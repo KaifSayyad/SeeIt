@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../assets/styles/Login.css';
 import api from '../services/api';
-import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +16,7 @@ const Login = () => {
 
 
   const handleLogin = async () => {
+    console.log(api.getUri());
     if (email && password) {
       try {
         console.log('wating for response');
@@ -28,7 +28,6 @@ const Login = () => {
         localStorage.setItem('userId', response.data.userId);
         window.location.href = '/upload';
       } catch (err) {
-        console.log(err.response?.data?.message || 'An error occurred');
         toast.error(err.response?.data?.message || 'An error occurred', {
           position: 'top-center',
           autoClose: 4000,
