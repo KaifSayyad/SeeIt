@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const authenticateUser = async (req, res) => {
   const { email, password } = req.body;
+  console.log(email, password);
 
   const scanParams = {
     TableName: process.env.DYNAMO_DB_TABLE,
@@ -18,7 +19,7 @@ const authenticateUser = async (req, res) => {
 
   try {
     const { Items } = await dynamoDbClient.send(new ScanCommand(scanParams));
-
+    
     if (!Items || Items.length == 0 || Items.length > 1) {
       return res.status(404).json({ message: 'User not found' });
     }
