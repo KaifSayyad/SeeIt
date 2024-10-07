@@ -19,11 +19,12 @@ const Login = () => {
   const handleLogin = async () => {
     if (email && password) {
       try {
-        console.log(API_URL);
+        console.log('wating for response');
         const response = await api.post(`/auth/login`, {
           email : email,
           password : password
         });
+        console.log('response', response);
         localStorage.setItem('userId', response.data.userId);
         window.location.href = '/upload';
       } catch (err) {
