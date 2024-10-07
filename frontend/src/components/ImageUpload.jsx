@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
-// import api from '../services/api';
+import api from '../services/api';
 import 'react-toastify/dist/ReactToastify.css';
 import '../assets/styles/ImageUpload.css';
 import axios from 'axios';
@@ -40,7 +40,7 @@ function ImageUpload() {
     try {
       // Upload image and get the audio stream
       console.log('Sending image to server....');
-      const response = await axios.post(`${API_URL}/images/upload`, formData, {
+      const response = await api.post(`/images/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob', // Expect a binary blob for audio
       });
@@ -77,7 +77,7 @@ function ImageUpload() {
 
     try {
       // Send the image to the backend to be saved
-      await axios.post(`${API_URL}/images/save`, formData, {
+      await api.post(`/images/save`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

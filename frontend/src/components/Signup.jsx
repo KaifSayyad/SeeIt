@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// import api from '../services/api';
+import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../assets/styles/Signup.css';
@@ -12,7 +12,6 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -21,7 +20,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/auth/signup`, {
+      const response = await api.post(`/auth/signup`, {
         name : name,
         email : email,
         password : password

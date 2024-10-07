@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-// import api from '../services/api';
+import api from '../services/api';
 import '../assets/styles/ImagesPage.css';
 
 const ImagesPage = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL;
+
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -20,7 +20,7 @@ const ImagesPage = () => {
           return;
         }
 
-        const response = await axios.get(`${API_URL}/images/getImages/${userId}`);
+        const response = await api.get(`/images/getImages/${userId}`);
         setImages(response.data.images);
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to fetch images.');

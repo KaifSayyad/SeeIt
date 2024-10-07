@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 // import api from '../services/api';
 import { toast } from 'react-toastify';
 import '../assets/styles/Login.css';
+import api from '../services/api';
 import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate(); // To navigate between routes
-  const API_URL = import.meta.env.VITE_API_URL;
 
 
   const handleEmailChange = (e) => setEmail(e.target.value);
@@ -20,7 +20,7 @@ const Login = () => {
     if (email && password) {
       try {
         console.log(API_URL);
-        const response = await axios.post(`${API_URL}/auth/login`, {
+        const response = await api.post(`/auth/login`, {
           email : email,
           password : password
         });
