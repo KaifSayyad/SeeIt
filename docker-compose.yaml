@@ -1,0 +1,27 @@
+services:
+  server:
+    image: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${SERVER_HOST}
+    env_file: .env
+    networks:
+      - server-reverse-proxy
+    command: pm2-runtime start server.js --watch
+  
+  nginx:
+    image: reverse-proxy
+    build: 
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: ${NGINX_HOST}
+    env_file: .env
+    networks:
+      - server-reverse-proxy
+    ports:
+        - ${NGINX_PORT}:${NGINX_PORT}
+
+networks:
+  server-reverse-proxy:
+    driver: bridge

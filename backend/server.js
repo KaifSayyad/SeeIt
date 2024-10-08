@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 
 // CORS configuration
-const allowedOrigin = 'https://main.d21o76va97lham.amplifyapp.com'; // Replace with your actual domain
+const allowedOrigin = ["https://main.d21o76va97lham.amplifyapp.com/"]; // Replace with your actual domain
 
 app.use(cors({
   origin: allowedOrigin,
@@ -49,7 +49,7 @@ app.use('/api', router);
 router.use('/auth', authRoutes);
 router.use('/images', imageRoutes);
 
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.SERVER_PORT || 9999;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

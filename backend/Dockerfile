@@ -1,11 +1,15 @@
 FROM node:20
 
-WORKDIR /app
+# Set NODE_ENV to development
+ENV NODE_ENV=development
 
-COPY package.json .
+WORKDIR /usr/src/app
+
+COPY /package*.json /usr/src/app
 
 RUN npm install
 
-COPY . .
+# Bundle app source
+COPY . /usr/src/app
 
-CMD ["npx", "nodemon", "server.js"]
+RUN npm install pm2 -g
