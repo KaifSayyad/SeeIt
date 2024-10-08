@@ -15,15 +15,12 @@ const Login = () => {
 
 
   const handleLogin = async () => {
-    console.log(api.getUri());
     if (email && password) {
       try {
-        console.log('wating for response');
         const response = await api.post(`/auth/login`, {
           email : email,
           password : password
         });
-        console.log('response', response);
         localStorage.setItem('userId', response.data.userId);
         window.location.href = '/upload';
       } catch (err) {
