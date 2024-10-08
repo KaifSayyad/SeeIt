@@ -5,6 +5,13 @@ upstream api {
 server {
     listen ${NGINX_PORT};
     server_name ${NGINX_HOST};
+    root /usr/share/nginx/html;
+
+    location / {
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
 
     # Redirect /api requests to the API gateway
     location /api {
