@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import api from '../services/api';
 import { toast } from 'react-toastify';
 import '../assets/styles/Login.css';
 import api from '../services/api';
