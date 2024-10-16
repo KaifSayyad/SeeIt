@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../assets/styles/Login.css';
 import api from '../services/api';
+import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
