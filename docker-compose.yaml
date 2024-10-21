@@ -8,7 +8,7 @@ services:
     env_file: .env
     networks:
       - server-reverse-proxy
-    command: pm2-runtime start server.js --watch
+    command: pm2 start server.js --watch --ignore-watch="uploads" --no-daemon
   
   nginx:
     image: reverse-proxy

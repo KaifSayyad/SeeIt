@@ -19,6 +19,11 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
+const PORT = process.env.SERVER_PORT || 8888;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 const router = express.Router();
 app.use('/api', router);
 
@@ -26,10 +31,7 @@ app.use('/api', router);
 router.get('/', (req, res) => {
   res.send('Hello World');
 });
-router.use('/auth', authRoutes);
+
 router.use('/images', imageRoutes);
 
-const PORT = process.env.SERVER_PORT || 8888;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+router.use('/auth', authRoutes);

@@ -18,7 +18,6 @@ const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 // Upload image to S3 and process it with Gemini and Polly
 const processImage = async (req, res) => {
   const file = req.file;
-
   // Generate unique file name
   const fileName = `${uuidv4()}-${file.originalname}`;
   const file_bin = fs.readFileSync(file.path);
