@@ -13,7 +13,7 @@ folder_name="dist-$version"
 mkdir "$folder_name"
 
 # Copy the contents of the "dist" folder to the new folder
-cp -r ./dist/* "$folder_name"
+cp -r ./frontend/dist/* "$folder_name"
 
 # Push the new folder to the target repository
 git clone https://github.com/KaifSayyad/SeeIt-build-files.git
@@ -26,6 +26,7 @@ git push origin main
 # Cleanup: Delete the folder from the current repository
 cd ..
 rm -rf "$folder_name"
+rm -rf SeeIt-build-files
 git add .
 git commit -m "Delete $folder_name"
 git push origin main
