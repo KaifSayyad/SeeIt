@@ -1,6 +1,7 @@
 FROM nginx:latest
 
 WORKDIR /usr/share/nginx/html
+
 RUN rm -rf ./*
 COPY ./dist-* .
 # Copy the nginx configuration file
