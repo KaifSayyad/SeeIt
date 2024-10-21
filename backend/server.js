@@ -19,13 +19,13 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
-
 const router = express.Router();
 app.use('/api', router);
 
+
+router.get('/', (req, res) => {
+  res.send('Hello World');
+});
 router.use('/auth', authRoutes);
 router.use('/images', imageRoutes);
 
