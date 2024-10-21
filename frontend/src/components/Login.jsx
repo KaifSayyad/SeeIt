@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+// import api from '../services/api';
 import { toast } from 'react-toastify';
 import '../assets/styles/Login.css';
 import api from '../services/api';
-import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,12 +16,15 @@ const Login = () => {
 
 
   const handleLogin = async () => {
+    console.log(api.getUri());
     if (email && password) {
       try {
+        console.log('wating for response');
         const response = await api.post(`/auth/login`, {
           email : email,
           password : password
         });
+        console.log('response', response);
         localStorage.setItem('userId', response.data.userId);
         window.location.href = '/upload';
       } catch (err) {

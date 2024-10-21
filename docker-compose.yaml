@@ -1,6 +1,6 @@
 services:
   server:
-    image: backend
+    image: server
     build:
       context: ./backend
       dockerfile: Dockerfile
