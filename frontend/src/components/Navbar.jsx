@@ -23,12 +23,12 @@ const Navbar = () => {
         <div>
           {isAuthenticated && (
             <>
-              {currentPath === "/upload" ? (
+              {currentPath === "/upload/" ? (
                 <StyledLink to="/images">
                   <StyledButton>Gallery</StyledButton>
                 </StyledLink>
               ) : currentPath === "/images" ? (
-                <StyledLink to="/upload">
+                <StyledLink to="/upload/">
                   <StyledButton>Upload</StyledButton>
                 </StyledLink>
               ) : null}
