@@ -43,7 +43,7 @@ const processImage = async (req, res) => {
     const pollyParams = {
       OutputFormat: 'mp3',
       Text: summary,
-      VoiceId: 'Joanna',
+      VoiceId: 'Aditi',
     };
 
     console.log('Prompting Polly...');
