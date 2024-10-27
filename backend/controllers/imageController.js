@@ -1,7 +1,7 @@
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import fs from 'fs';
+import fs, { copyFileSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { s3Client, pollyClient } from '../config/awsConfig.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -49,28 +49,42 @@ const processImage = async (req, res) => {
 
   // Generate unique file name
   const fileName = `${uuidv4()}-${file.originalname}`;
+  const base64Image = Buffer.from(file_bin).toString('base64');
 
   try {
-    // Prepare the image data for Gemini API
-    const image = {
-      inlineData: {
-        data: Buffer.from(file_bin).toString('base64'),
-        mimeType: file.mimetype,
-      },
+    // Prepare the payload for Gemini API
+    const payload = {
+      contents: [{
+        parts: [
+          {
+            inlineData: {
+              mimeType: file.mimetype,
+              data: base64Image,
+            }
+          },
+          {
+            text: "Describe the emotions in this image."
+          }
+        ]
+      }]
     };
 
-    console.log("Payload for Gemini API:", JSON.stringify(image));
+    // Write the base64 image to a text file
+    const base64FilePath = `./${fileName}.txt`;
+    fs.writeFileSync(base64FilePath, base64Image);
+    console.log(`Base64 image written to ${base64FilePath}`);
 
-    // Use Gemini API to summarize the image
+    // Use Gemini API to analyze the image
     console.log('Prompting Gemini...');
-    const prompt = 'Describe this image and enhance the emotions comprehensively';
-    const geminiResponse = await model.generateContent([prompt, image]);
+    const geminiResponse = await model.generateContent(payload);
 
-    if (!geminiResponse || !geminiResponse.response || !geminiResponse.response.text) {
+    // Check if response is valid
+    if (!geminiResponse || !geminiResponse.response || !geminiResponse.response.candidates || !geminiResponse.response.candidates[0]) {
       throw new Error('Invalid response from Gemini');
     }
 
-    const summary = geminiResponse.response.text();
+    // Extracting the summary from the response
+    const summary = geminiResponse.response.candidates[0].content.parts[0].text; // Corrected to the provided hierarchy
     console.log('Response from Gemini:', summary);
 
     // Convert the summary to speech using AWS Polly
@@ -106,6 +120,9 @@ const processImage = async (req, res) => {
     res.status(500).json({ message: 'Error processing image', error });
   }
 };
+
+
+
 
 // Function to save the image to S3 and update user information in DynamoDB
 const saveImage = async (req, res) => {
