@@ -1,6 +1,6 @@
 import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
-import {GetCommand, UpdateCommand} from '@aws-sdk/lib-dynamodb';
+import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { s3Client, pollyClient } from '../config/awsConfig.js';
@@ -8,23 +8,49 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import { dynamoDbClient } from '../config/awsConfig.js';
 
-
+import mime from 'mime-types';
+import dotenv from 'dotenv';
+dotenv.config();
 // Initialize GoogleGenerativeAI with your API key
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyA6fe32hAo-5ZHTJ5tQCbAmamFz4gFlLD4'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
+const DYNAMO_DB_TABLE = process.env.DYNAMO_DB_TABLE;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-// Upload image to S3 and process it with Gemini and Polly
 const processImage = async (req, res) => {
   const file = req.file;
+
+  // Check if the image is properly loaded
+  if (!file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  // Validate the file is an image based on its MIME type
+  const validMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  if (!validMimeTypes.includes(file.mimetype)) {
+    return res.status(400).json({ message: 'Invalid file type. Please upload a valid image (JPEG, PNG, or GIF).' });
+  }
+
+  // Read the file
+  let file_bin;
+  try {
+    file_bin = fs.readFileSync(file.path);
+    
+    // Log file size and MIME type
+    const fileSize = fs.statSync(file.path).size; // Get file size in bytes
+    console.log(`Encoded image length: ${fileSize} bytes`);
+    console.log(`MIME type: ${file.mimetype}`);
+  } catch (error) {
+    console.error('Error reading file:', error);
+    return res.status(500).json({ message: 'Error reading uploaded file', error });
+  }
+
   // Generate unique file name
   const fileName = `${uuidv4()}-${file.originalname}`;
-  const file_bin = fs.readFileSync(file.path);
-
 
   try {
-
     // Prepare the image data for Gemini API
     const image = {
       inlineData: {
@@ -33,12 +59,20 @@ const processImage = async (req, res) => {
       },
     };
 
+    console.log("Payload for Gemini API:", JSON.stringify(image));
+
     // Use Gemini API to summarize the image
-    console.log(`Prompting Gemini...`);
+    console.log('Prompting Gemini...');
     const prompt = 'Describe this image and enhance the emotions comprehensively';
     const geminiResponse = await model.generateContent([prompt, image]);
+
+    if (!geminiResponse || !geminiResponse.response || !geminiResponse.response.text) {
+      throw new Error('Invalid response from Gemini');
+    }
+
     const summary = geminiResponse.response.text();
-    console.log('response from gemini :\n',summary);
+    console.log('Response from Gemini:', summary);
+
     // Convert the summary to speech using AWS Polly
     const pollyParams = {
       OutputFormat: 'mp3',
@@ -48,33 +82,32 @@ const processImage = async (req, res) => {
 
     console.log('Prompting Polly...');
     const pollyResponse = await pollyClient.send(new SynthesizeSpeechCommand(pollyParams));
-    // Set response headers to handle audio streaming
-    res.set({
-      'Content-Type': 'audio/mpeg',
-      'Content-Disposition': 'inline',
-      'Transfer-Encoding': 'chunked'
-    });
 
     if (!pollyResponse.AudioStream) {
       throw new Error('No audio stream returned from Polly.');
     }
-    
-    // Set the appropriate headers for audio streaming
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Disposition', 'inline');
-    
-    console.log('Streaming response to client');
+
+    // Set response headers to handle audio streaming
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Disposition': 'inline',
+      'Transfer-Encoding': 'chunked',
+    });
+
     // Stream Polly's audio response directly to the client
+    console.log('Streaming response to client');
     pollyResponse.AudioStream.pipe(res).on('error', (err) => {
       console.error('Error streaming audio:', err);
       res.status(500).send('Error streaming audio');
     });
 
   } catch (error) {
+    console.error('Error processing image:', error);
     res.status(500).json({ message: 'Error processing image', error });
   }
 };
 
+// Function to save the image to S3 and update user information in DynamoDB
 const saveImage = async (req, res) => {
   const { userId } = req.body;
   const file = req.file;
@@ -83,13 +116,19 @@ const saveImage = async (req, res) => {
     return res.status(400).json({ message: 'No file uploaded' });
   }
 
-  // Generate unique file name
-  const fileName = `${uuidv4()}-${file.originalname}`;
-  const file_bin = fs.readFileSync(file.path);
+  let file_bin;
+  try {
+    file_bin = fs.readFileSync(file.path);
+  } catch (error) {
+    console.error('Error reading file:', error);
+    return res.status(500).json({ message: 'Error reading uploaded file', error });
+  }
 
-  // Upload image to S3
+  const fileName = `${uuidv4()}-${file.originalname}`;
+
+  // S3 upload parameters
   const s3Params = {
-    Bucket: process.env.S3_BUCKET_NAME,
+    Bucket: S3_BUCKET_NAME,
     Key: fileName,
     Body: file_bin,
     ACL: 'public-read',
@@ -97,32 +136,29 @@ const saveImage = async (req, res) => {
   };
 
   try {
-    console.log(`Uploading file to S3...`);
-    
+    console.log('Uploading file to S3...');
     await s3Client.send(new PutObjectCommand(s3Params));
-    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${fileName}`;
-
+    const fileUrl = `https://${S3_BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${fileName}`;
     console.log(`File uploaded to S3: ${fileUrl}`);
 
-    // Retrieve user from DynamoDB
+    // Fetch user from DynamoDB
     const getParams = {
-      TableName: process.env.DYNAMO_DB_TABLE,
+      TableName: DYNAMO_DB_TABLE,
       Key: { userId },
     };
 
     const { Item } = await dynamoDbClient.send(new GetCommand(getParams));
-    
+
     if (!Item) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Handle user.memories array
-    const memories = Item.memories || [];  // Initialize memories array if it doesn't exist
+    // Update user memories
+    const memories = Item.memories || [];
     memories.push(fileUrl);
 
-    // Update user with new memories
     const updateParams = {
-      TableName: process.env.DYNAMO_DB_TABLE,
+      TableName: DYNAMO_DB_TABLE,
       Key: { userId },
       UpdateExpression: 'SET memories = :memories',
       ExpressionAttributeValues: {
@@ -140,23 +176,23 @@ const saveImage = async (req, res) => {
   }
 };
 
+// Function to retrieve saved images
 const getImages = async (req, res) => {
   const { userId } = req.params;
+
   try {
-    // Retrieve user from DynamoDB
     const params = {
-      TableName: process.env.DYNAMO_DB_TABLE,
+      TableName: DYNAMO_DB_TABLE,
       Key: { userId },
     };
 
     const { Item } = await dynamoDbClient.send(new GetCommand(params));
-    
+
     if (!Item) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Send the images URLs
-    const memories = Item.memories || [];  // Return an empty array if memories does not exist
+    const memories = Item.memories || [];
     res.status(200).json({ images: memories });
   } catch (error) {
     console.error('Error retrieving images:', error);
@@ -164,4 +200,4 @@ const getImages = async (req, res) => {
   }
 };
 
-export { processImage, saveImage, getImages};
+export { processImage, saveImage, getImages };
