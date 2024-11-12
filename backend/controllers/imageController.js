@@ -4,6 +4,7 @@ import { GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import fs, { copyFileSync } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { s3Client, pollyClient } from '../config/awsConfig.js';
+import fetch from 'node-fetch';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import { dynamoDbClient } from '../config/awsConfig.js';
@@ -69,22 +70,25 @@ const processImage = async (req, res) => {
       }]
     };
 
-    // Write the base64 image to a text file
-    const base64FilePath = `./${fileName}.txt`;
-    fs.writeFileSync(base64FilePath, base64Image);
-    console.log(`Base64 image written to ${base64FilePath}`);
-
     // Use Gemini API to analyze the image
     console.log('Prompting Gemini...');
-    const geminiResponse = await model.generateContent(payload);
-
+    // const geminiResponse = await model.generateContent(payload);
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    }).then(response => response.json());
+    console.log('Gemini response:', geminiResponse);
+    console.log('Gemini response:', geminiResponse.candidates[0].content.parts[0].text);
     // Check if response is valid
-    if (!geminiResponse || !geminiResponse.response || !geminiResponse.response.candidates || !geminiResponse.response.candidates[0]) {
+    if (!geminiResponse || !geminiResponse.candidates || !geminiResponse.candidates[0]) {
       throw new Error('Invalid response from Gemini');
     }
 
     // Extracting the summary from the response
-    const summary = geminiResponse.response.candidates[0].content.parts[0].text; // Corrected to the provided hierarchy
+    const summary = geminiResponse.candidates[0].content.parts[0].text; // Corrected to the provided hierarchy
     console.log('Response from Gemini:', summary);
 
     // Convert the summary to speech using AWS Polly

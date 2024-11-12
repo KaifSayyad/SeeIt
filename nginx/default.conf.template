@@ -1,6 +1,10 @@
+upstream api {
+    server server:${SERVER_PORT};
+}
+
 server {
-    listen 443 ssl;
-    server_name localhost;  # Or use ${NGINX_HOST}
+    listen 80;
+    server_name ${NGINX_HOST};  # Or use ${NGINX_HOST}
     root /usr/share/nginx/html;
 
     ssl_certificate /etc/nginx/certs/server.crt;

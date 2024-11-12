@@ -18,7 +18,7 @@ const Navbar = () => {
     <AppBar position="static" sx={{ backgroundColor: '#333' }}>
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          SeeIt
+          PhotoBomb
         </Typography>
         <div>
           {isAuthenticated && (
